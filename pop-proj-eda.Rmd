@@ -1,0 +1,146 @@
+---
+title: "Population Projections EDA"
+output: html_notebook
+---
+
+
+```{r setup}
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+- This code chunk utilizes `readxl` to read in a range of values from the projection excel documents.
+- Immediately after, the resultant data frame is cleaned using functions from `tidyr` and `dplyr`.
+- I used `pivot_longer()` to convert the data from a wide to long format.
+- I next convert the new column `projection_year` to an integer.
+
+```{r pop-proj-clean}
+xlsx_path <- "qld-population-projections-regions-tables-sa4s-qld-low-med-high-series-2016-2041.xlsx"
+xlsx_colnames <- c("series", "region", paste("pred", 2016:2041, sep = "_"))
+
+pop_projections <- readxl::read_excel(xlsx_path,
+                                      sheet = 2, 
+                                      range = "A6:AB41",
+                                      col_names = xlsx_colnames) %>% 
+  fill(series, .direction = "down") %>% 
+  pivot_longer(cols = starts_with("pred"), 
+               names_to = "projection_year") %>% 
+  mutate(projection_year = as.integer(str_remove(projection_year, "pred_")),
+         region = ifelse(region == "Total", "Queensland", region))
+
+glimpse(pop_projections)
+```
+
+I follow a similar process as above for the age and sex data.
+
+
+```{r age-proj-clean}
+age_raw <- readxl::read_excel(
+  "projected-population-5year-age-group-sex-greater-brisbane-gccsa-sa4s-low-med-high-series-2016-2041.xlsx",
+  sheet = 3,
+  skip = 3,
+  col_names = c(
+    "series",
+    "region",
+    "sex",
+    "age_group",
+    paste("pred", 2016:2041, sep = "_")
+  ),
+  range = "A5:AD1900"
+) 
+
+age_pop <- age_raw %>%
+  na.omit() %>% 
+  group_by(series, region, sex, age_group) %>% 
+  mutate(change = (pred_2041 - pred_2016) / pred_2016) %>%
+  ungroup() %>% 
+  pivot_longer(cols = starts_with("pred"), 
+               names_to = "projection_year") %>% 
+  mutate(projection_year = as.integer(str_remove(projection_year, "pred_")),
+         series = factor(series, levels = rev(c("Low", "Medium", "High"))))
+
+glimpse(age_pop)
+```
+
+Visualizing total population projections for all of Queensland.
+
+```{r pop-proj-plots}
+pop_projections %>% 
+  filter(region %in% c("Queensland")) %>% 
+  ggplot(aes(projection_year, value, color = series)) +
+  geom_line() + 
+  geom_point() +
+  scale_y_continuous(labels = 
+                       scales::comma_format(scale = .001, big.mark = ",", accuracy = 1)) + 
+  theme_light() +
+  theme(legend.position = "bottom") +
+  labs(title = "Projected population, Queensland, at 30 June",
+       y = "Population in thousands",
+       color = "",
+       x = "")
+
+```
+
+Visualizing population projections for every SA4. 
+
+```{r}
+pop_projections %>% 
+  filter(!region %in% c("Queensland")) %>% 
+  ggplot(aes(projection_year, value, color = series)) +
+  geom_line() + 
+  geom_point(size = .25) +
+  facet_wrap(~region, scales= "free_y",
+             ncol = 3) +
+  scale_y_continuous(labels = 
+                       scales::comma_format(scale = .001, big.mark = ",", accuracy = 1)) + 
+  theme_light() +
+  theme(legend.position = "bottom") +
+  labs(title = "Projected population, by SA4, at 30 June",
+       y = "Population in thousands",
+       color = "",
+       x = "")
+
+```
+
+
+This code chunk takes the `age_group` column and creates two new columns `min_age` and `max_age`. These new columns are used to create age groupings of 14 and under and 65 and older to imitate that of the report. This is then used to visualize population change among these two major groups—youth and seniors.
+
+```{r}
+age_pop %>% 
+  filter(age_group != "Total") %>% 
+  mutate(min_age = as.integer(str_extract(age_group, "[0-9]+")),
+         max_age = as.integer(str_extract(
+           str_extract(age_group, "[:punct:][0-9]+"),
+           "[0-9]+"
+           )),
+         age_bucket = case_when(
+           (min_age >= 65) ~ "65 and older", 
+           (max_age <= 14) ~ "14 and younger",
+         )) %>% 
+  group_by(series, age_bucket, projection_year) %>% 
+  summarise(pop = sum(value)) %>% 
+  filter(!is.na(age_bucket)) %>% 
+  ggplot(aes(projection_year, pop, color = age_bucket)) +
+  geom_line() + 
+  facet_wrap(~series, ncol = 1) +
+  theme_light() +
+  theme(legend.position = "bottom") + 
+  scale_y_continuous(labels = 
+                       scales::comma_format(scale = .001, big.mark = ",", accuracy = 1)) +
+  labs(title = "Population projections for youth and seniors",
+       x = "",
+       y = "",
+       color = "")
+```
+
+Viewing the data in a table.
+
+```{r}
+age_raw %>% 
+  group_by(series, age_group) %>% 
+  summarise(pop_2016 = sum(pred_2016),
+            pop_2041 = sum(pred_2041),
+            `% change` = round(((pop_2041 - pop_2016)/pop_2016) * 100, 2)) %>% 
+  arrange((age_group)) %>% 
+  gt::gt()
+```

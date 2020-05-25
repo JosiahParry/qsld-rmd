@@ -1,0 +1,205 @@
+---
+title: "Queensland Government population projections, 2018 edition: Queensland SA4s"
+author: "Queensland Government Statistician’s Office"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    toc: true
+    toc_float: true
+    css: "style.css"
+    includes:
+geometry: "left=1.25cm,right=1.25cm,top=2cm,bottom=3cm"
+classoption:  
+  - twocolumn   
+---
+
+```{r, top_level_proj, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo=FALSE)
+
+
+xlsx_path <- "qld-population-projections-regions-tables-sa4s-qld-low-med-high-series-2016-2041.xlsx"
+xlsx_colnames <- c("series", "region", paste("pred", 2016:2041, sep = "_"))
+
+pop_projections <- readxl::read_excel(xlsx_path,
+                                      sheet = 2, 
+                                      range = "A6:AB41",
+                                      col_names = xlsx_colnames) %>% 
+  fill(series, .direction = "down") %>% 
+  pivot_longer(cols = starts_with("pred"), 
+               names_to = "projection_year") %>% 
+  mutate(projection_year = as.integer(str_remove(projection_year, "pred_")),
+         region = ifelse(region == "Total", "Queensland", region))
+
+```
+
+
+# Introduction
+
+This publication provides a spatial and temporal overview of projected population change for Queensland’s statistical areas level 4 (SA4s). Analysis of the age composition of the future population is included, with a focus on Queensland’s younger and older populations.
+
+For a more detailed analysis of the projection results at the small area level see the related information briefs for local government areas and statistical areas level 2 (SA2s) . Data tables supporting the range of projection publications are available from the Queensland Government Statistician’s Office website. The base population for these projections is the 2016 Australian Bureau of Statistics (ABS) preliminary rebased estimated resident population (ERP).
+
+# Total population by series
+
+## Greater Brisbane
+
+The Greater Brisbane4 Greater Capital City Statistical Area (GCCSA) includes the nine SA4s of Brisbane–East, Brisbane–North, Brisbane–South, Brisbane–West, Brisbane Inner City, Ipswich, Logan–Beaudesert, Moreton Bay–North and Moreton Bay–South.
+
+```{r, tbl_1, results = "asis"}
+tribble(
+  ~Series, ~`2016 ERP`, ~`2041`, ~`Change`, ~`%`,
+  "Low", 2360241, 3400614, 1040373, 1.5,
+  "Medium", 2360241, 3667302, 1307061, 1.8,
+  "High", 2360241, 3979304, 161063, 2.1
+) %>% knitr::kable(format = "latex",
+                   label = "Table 1 Projected population and population change, Greater Brisbane GCCSA, at 30 June") %>% 
+  kableExtra::add_header_above(c("", "Population" = 2 , "Pop. Change" = 2)) %>% 
+  kableExtra::kable_styling(font_size = 8)
+```
+
+Greater Brisbane is expected to gain an additional 1.31 million people over 25 years under the medium series, increasing the population to 3.67 million by 2041 (Figure 1). Over the same period, the population of Greater Brisbane is projected to grow by over 1 million persons under the low series and up to 1.62 million under the high series (Table 1). This equates to average annual growth rates of between 1.5% and 2.1% per annum.
+
+
+```{r, fig_1}
+fig_1 <- pop_projections %>% 
+  filter(region == "Greater Brisbane GCCSA (c)") %>% 
+  ggplot(aes(projection_year, value, color = series)) +
+  geom_line() + 
+  geom_point() +
+  theme_light() +
+  theme(legend.position = "bottom") +
+  labs(title = "Projected population, Greater Brisbane GCCSA, at 30 June")
+
+fig_1
+```
+
+
+> SA4 population change comprises four components: natural increase (births less deaths); net interstate migration (interstate arrivals less interstate departures); net overseas migration (overseas arrivals less overseas departures) and net intra-state migration (arrivals from other SA4s in Queensland less departures to other Queensland SA4s).
+
+Under each series, net overseas migration is expected to make the greatest contribution to the 25–year population growth. Net overseas migration is projected to contribute between 490,000 and 820,000 persons, or 47.1% to 50.6% of the total population growth in Greater Brisbane (Table 2).
+
+Natural increase is projected to make the second-largest contribution to population growth in Greater Brisbane by 2041, between 357,000 to 659,000 persons.
+
+```{r, tbl_2}
+
+tribble(
+  ~Component, ~Low, ~Med, ~High,
+  "Births", 818038, 941037, 1079608,
+  "Deaths", -461317, -440554, -420716,
+  "Natural Increase", 356721, 500483, 658892,
+  "Net intra-state migration", 39232, -35035, -107005,
+  "Net interstate migration", 153579, 200503, 247658,
+  "Net overseas migration", 489840, 641110, 819518
+) %>% 
+  knitr::kable(
+    caption = "Table 2 Components of projected population change, Greater Brisbane GCCSA, 25 years to 30 June 2041"
+  ) %>% 
+  kableExtra::add_header_above(c("", "Projection Series" = 3)) %>% 
+  kableExtra::kable_styling(font_size = 8)
+```
+
+
+The third-largest component of SA4 population growth, net interstate migration (people moving to Queensland from elsewhere in Australia), is projected to contribute between 155,000 and 248,000 persons (or 14.9% and 15.3% of total growth) to Greater Brisbane’s population over the 25 years to 2041.
+Intra-state migration, the fourth component of population change, will make the smallest contribution to population growth in Greater Brisbane under the low series, adding an additional 39,000 people from the rest of Queensland. However, under both the medium and high series, it is anticipated that Greater Brisbane will record a net population outflow5 of 35,000 and 107,000 persons respectively to the rest of Queensland through intra-state migration.
+
+## Rest of Queensland (excluding Greater Brisbane GCCSA) 
+
+
+Rest of Queensland (excluding Greater Brisbane GCCSA)
+The rest of Queensland (RoQ) outside Greater Brisbane GCCSA is comprised of the 10 SA4s of Cairns, Central Queensland, Darling Downs–Maranoa, Gold Coast, Mackay–Isaac–Whitsunday, Queensland–Outback, Sunshine Coast, Toowoomba, Townsville and Wide Bay.
+
+Population growth in RoQ is projected to be slower than in Greater Brisbane under each comparable projection series. Over the 25 years to 2041, the average annual growth in RoQ is anticipated to range from 0.9% under the low series, up to 1.8% under the high series (Table 3).
+
+
+```{r tbl_3}
+tribble(
+  ~x1, ~x2, ~x3, ~x4, ~x5,
+  "Low", 2488636, 3113435, 624799, 0.9,
+  "Medium", 2488636, 3494359, 1005723, 1.4,
+  "High", 2488636, 3908590, 1419954, 1.8
+) %>% 
+  knitr::kable(col.names = rep("", 5),
+               caption = "Table 3 Projected population and population change, rest of Queensland, at 30 June") %>% 
+  kableExtra::add_header_above(c("", "— number —" = 2,
+                                 "number", "% p.a.")) %>% 
+  kableExtra::add_header_above(c("Series", "2016 ERP",
+                                 "2041", "2016-2041"= 2)) %>% 
+  kableExtra::add_header_above(c("", "Population" = 2, "Population change" = 2)) %>% 
+  kableExtra::kable_styling(font_size = 8)
+```
+
+Under each series, over 3 million persons are projected to be living in RoQ by 2041, adding between 625,000 and 1.42 million persons to the 2016 ERP of 2.49 million (Figure 2).
+
+```{r, fig_2, echo=FALSE}
+fig_2 <- pop_projections %>% 
+  filter(!region %in% c("Greater Brisbane GCCSA (c)", "Queensland")) %>% 
+  group_by(series, projection_year) %>% 
+  summarise(value = sum(value)) %>% 
+  ggplot(aes(projection_year, value, color = series)) +
+  geom_line() + 
+  geom_point() +
+  theme_light() +
+  labs(title = "Projected population, rest of Queensland, at 30 June") +
+  theme(legend.position = "bottom")
+
+fig_2
+```
+
+Similar to Greater Brisbane, net overseas migration is projected to make the largest contribution to population growth in RoQ over the 25–year period to 2041, adding between 308,000 and 515,000 persons (Table 4).
+Under the medium and high series, natural increase is projected to be the second largest contributor to population growth, accounting for 29.8% and 32.8% of the additional population respectively.
+
+```{r, tbl_4}
+
+```
+
+# Medium series: Greater Brisbane 
+
+
+Within Greater Brisbane GCCSA (which excludes the Gold Coast and Sunshine Coast), Brisbane–South was the most populous SA4 in 2016. However, by 2041, Ipswich SA4 is projected to have the largest population, increasing from 334,000 to 750,000 persons. Logan–Beaudesert SA4 is projected to have the second- largest population by 2041, followed by Brisbane–South, Moreton Bay–North and Brisbane Inner City (Table 5).
+
+Over the next 25 years, the SA4 with the largest projected population growth in Greater Brisbane is Ipswich (up by 416,000 persons), or an average annual growth rate of 3.3%. Logan–Beaudesert’s population is also projected to grow significantly (by 259,000 persons), followed by Moreton Bay–North and Brisbane Inner City.
+
+```{r, tbl_5}
+```
+
+## Components of population change
+
+Consistent with the outlook for Queensland’s population growth, net overseas migration is anticipated to be the largest component of population change in Greater Brisbane. Over the 25 years to 2041, net overseas migration is expected to add 641,000 persons to Greater Brisbane’s population, accounting for close to half (49.0%) of the projected population growth.
+
+Natural increase is projected to be the second largest contributor to growth in Greater Brisbane. Over the 25–year horizon to 2041, natural increase is expected to contribute around 500,000 additional persons, or 38.3% of Greater Brisbane’s population growth.
+
+The third component contributing to population growth, net interstate migration, is projected to make a contribution of 201,000 persons or 15.3% of Greater Brisbane’s population growth over the 25–year projection horizon.
+
+In contrast, the fourth component of Greater Brisbane’s population growth, net intrastate migration is expected to result in a net loss of 35,000 persons to RoQ.
+
+## Older people
+
+Greater Brisbane’s population is ageing, in line with global, national and state trends. Ageing reflects the combined effects of people living longer and the transition of the baby boomer cohort through the age profile.
+
+Over the 25 years to 2041, Greater Brisbane is projected to experience growth in the number of older people (defined as those aged 65 years and older). Additionally, the proportion of older people in the population is also expected to rise.
+
+By 20141, Greater Brisbane's population of those aged 65 and over is projected to more than double to 697,000 persons, meaning that close to 1 in 5 residents (19.0%) will be aged 65 and over by 2041, up from 13.0% in 2016.
+
+All nine SA4s in Greater Brisbane are ageing, but by various magnitudes and at different rates.
+
+The largest increase in the number of older persons is projected to occur in Ipswich, up by 89,000 persons or more than double the 39,000 older persons recorded in 2016. Significant increases in older persons are also expected in Logan–Beaudesert (up 73,000 persons), followed by Moreton Bay–North (up 65,000 persons).
+
+Ipswich is also projected to have the fastest growth in the number of older persons, at 4.9% per annum on average, followed by in Logan–Beaudesert at 4.3% per annum.
+
+Moreover, all SA4s in Greater Brisbane are also projected to have a larger proportion of older persons. Notably, by 2041, Moreton Bay–North and Brisbane–East are expected to have the greatest proportion of older people, at more than a quarter of their population (Figure 3). Other SA4s in Greater Brisbane projected to have comparatively high proportions of older people in 2041 are Brisbane–North and Logan–Beaudesert, where close to 1 in every 5 residents will be aged 65 years and older.
+
+While Ipswich is projected to have the largest increase in the number of older persons by 2041, this growth is only expected to increase the proportion of older persons in the population by around 5.0 percentage points between 2016 and 2041, from 11.6% to 17.1%.
+
+```{r fig_3}
+```
+
+## Children and young people
+
+The number of children and young people (0 to 14–year old persons) in Greater Brisbane is projected to rise to 658,000 by 2041. While the number of children and young people is expected to increase, it will not rise as fast at the older cohort of those aged 65 and over. Consequently, the 0 to 14-year cohort is projected to account for a smaller share (17.9%) of Greater Brisbane’s population in 2041, down from 19.7% in 2016.
+Across Greater Brisbane, while more children and young people are projected to reside in all nine SA4s, the growth will not be evenly distributed.
+
+Over the 25–year projection horizon, the largest growth in the number of 0 to 14–year-old persons is expected to occur in Ipswich, more than doubling from 76,000 persons in 2016 to 155,000 persons in 2041. The second-largest increase in the number of children and young people in Greater Brisbane is expected to occur in Logan–Beaudesert, up by 46,000 persons. In contrast, the SA4 in Greater Brisbane expected to have the smallest increase in children and young people is Brisbane–West (up 1,000 persons), followed by Brisbane–East (up 2,000 persons).
+
+While the number of children and young people is increasing across SA4s in Greater Brisbane, their share of population is expected to steadily decline. In terms of the proportion of 0 to 14–year-old persons in the population, the largest decrease (–3.1 percentage points) is projected in Brisbane–East (from 19.7% in 2016 to 16.6% in 2041) (Figure 4). For other SA4s in Greater Brisbane, the proportion of children is anticipated to decline by between –1.3 percentage points in Brisbane–South (from 18.0% in 2016 to 16.7% in 2041) and –2.5 percentage points in Brisbane Inner City (from 13.9% to 11.4%).

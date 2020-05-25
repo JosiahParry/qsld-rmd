@@ -1,0 +1,112 @@
+---
+title: "Parameterized Projection Report"
+output: html_document
+params:
+  region:
+    choices: [Greater Brisbane Greater Capital City Statistical Area, Cairns Statistical Area Level 4, Central Queensland Statistical Area Level 4, Darling Downs - Maranoa Statistical Area Level 4, Gold Coast Statistical Area Level 4, Mackay - Isaac - Whitsunday Statistical Area Level 4, Queensland - Outback Statistical Area Level 4, Sunshine Coast Statistical Area Level 4, Toowoomba Statistical Area Level 4, Townsville Statistical Area Level 4, Wide Bay Statistical Area Level 4, Queensland]
+    value: Greater Brisbane Greater Capital City Statistical Area
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+# read in excel file
+age_raw <- readxl::read_excel(
+  "projected-population-5year-age-group-sex-greater-brisbane-gccsa-sa4s-low-med-high-series-2016-2041.xlsx",
+  sheet = 3,
+  skip = 3,
+  col_names = c(
+    "series",
+    "region",
+    "sex",
+    "age_group",
+    paste("pred", 2016:2041, sep = "_")
+  ),
+  # specify range
+  range = "A5:AD1900"
+) %>% 
+  # create min and max age columns
+  mutate(min_age = as.integer(str_extract(age_group, "[0-9]+")),
+         max_age = as.integer(str_extract(
+           str_extract(age_group, "[:punct:][0-9]+"),
+           "[0-9]+"
+           )),
+         # create buckets to resemble report
+         age_bucket = case_when(
+           (min_age >= 65) ~ "65 and older", 
+           (max_age <= 14) ~ "14 and younger",
+           TRUE ~ "15-64"
+         ),
+         age_group = fct_reorder(age_group, min_age)) %>% 
+  # filter to specified region
+  filter(region == params$region)
+
+age_pop <- age_raw %>%
+  group_by(series, region, sex, age_group) %>% 
+  mutate(change = (pred_2041 - pred_2016) / pred_2016) %>%
+  ungroup() %>% 
+  pivot_longer(cols = starts_with("pred"), 
+               names_to = "projection_year") %>% 
+  # make year a numeric
+  mutate(projection_year = as.integer(str_remove(projection_year, "pred_")),
+         # reorder the series column
+         series = factor(series, levels = rev(c("Low", "Medium", "High"))))
+```
+
+
+```{r}
+age_pop %>% 
+  group_by(series, projection_year) %>% 
+  summarise(population = sum(value)) %>% 
+  ggplot(aes(projection_year, population, color = series)) +
+  geom_line() + 
+  geom_point() +
+  theme_light() +
+  theme(legend.position = "bottom") + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "",
+       y = "Population",
+       title = glue::glue("Projected population\n{params$region}"),
+       color = "Series")
+```
+
+
+
+
+```{r}
+prop_pop <- age_pop %>% 
+  filter(age_bucket != "15-64") %>% 
+  group_by(series, projection_year, age_bucket) %>% 
+  summarise(pop = sum(value)) %>% 
+  mutate(perc_pop = pop / sum(pop)) %>% 
+  filter(projection_year %in% c(2016, 2041))
+  
+ggplot(prop_pop, aes(projection_year, perc_pop, color = age_bucket)) +
+  geom_point() +
+  geom_line() + 
+  facet_wrap(~series, ncol = 3) +
+  ggrepel::geom_text_repel(
+    data = filter(prop_pop, age_bucket != "15-64", projection_year == 2041),
+    mapping = aes(label = round(perc_pop * 100, 2)),
+    direction = "y",
+    nudge_y = .025,
+    segment.size = .2
+      ) +
+  theme_light() + 
+  theme(legend.position = "bottom") +
+  scale_y_continuous(labels = scales::percent) + 
+  labs(y = "% of population", x = "",
+       title = glue::glue("Change in population for youth and seniors\n{params$region}"),
+       color = "")
+ 
+```
+```{r}
+knitr::kable(prop_pop)
+```
+

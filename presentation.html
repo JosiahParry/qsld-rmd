@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>R Markdown</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Josiah Parry" />
+    <script src="presentation_files/header-attrs-2.1/header-attrs.js"></script>
+    <link href="presentation_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="presentation_files/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# R Markdown
+### Josiah Parry
+### May 25th, 2020
+
+---
+
+
+
+
+
+
+
+## What is R Markdown (Rmd)?
+
+- An alternative file format for authoring data science documents 
+
+--
+
+- Combines code &amp; prose
+
+--
+
+- Literate programming
+
+--
+
+- Flexible reporting
+
+--
+
+&gt; _.Rmd reminds me of Green Lantern's ring where it can create almost anything you can imagine._
+    - Brian Law
+    
+--
+
+&gt; _I think it’s interesting to explore the idea that Rmd spans this spectrum of ugly and utilitarian ETL, pretty report, parameterized reports, and flexdashboard._
+    - Katie Masiello 
+
+---
+class: center
+## Rmd Applications
+
+&lt;img src="static/rmarkdown-applications.png" width = 450/&gt;
+
+---
+
+## Other use cases 
+
+
+* [bookdown](https://github.com/rstudio/bookdown): Creating books and long-form articles
+
+--
+
+* [pagedown](https://github.com/rstudio/pagedown): Creating fancy PDFs and HTML pages
+
+--
+
+* [distill](https://rstudio.github.io/distill/): web publishing format optimized for scientific and technical communication
+
+--
+
+* [officer](https://davidgohel.github.io/officer/): Manipulate Word and PowerPoint
+
+---
+
+## Anatomy of R Markdown
+
+![](static/rmd-anatomy.png)
+---
+
+## YAML
+
+* **Y**et **A**nother **M**arkdown **L**anguage
+
+--
+
+* Contains document specific metadata
+
+--
+
+* Uses `key: value` pairs
+
+--
+
+* Encapsulated by a pair of  `---`  above and below
+
+--
+
+.pull-left[
+```
+---
+title: "Untitled"
+author: "RStudio"
+date: "May 25, 2020"
+output: html_document
+---
+Text of document
+```
+]
+
+.pull-right[
+## Untitled
+### _RStudio_
+### _May 25, 2020_
+
+Text of document
+]
+
+---
+class: inverse, middle, center
+# Markdown
+
+---
+
+## Markdown: Headers
+
+.pull-left[
+```
+# Header 1  
+
+## Header 2
+
+### Header 3
+
+#### Header 4
+
+##### Header 5
+
+###### Header 6
+```
+]
+
+.pull-right[
+# Header 1  
+## Header 2
+### Header 3
+#### Header 4
+##### Header 5
+###### Header 6
+]
+
+---
+
+## Markdown: Styling
+
+.pull-left[
+```
+Text  
+
+_italics_  
+
+**bold**  
+
+`code`  
+```
+]
+
+.pull-right[
+Text  
+
+_italics_  
+
+**bold**  
+
+`code`  
+]
+
+---
+
+## Markdown: Lists
+
+.pull-left[
+```
+Bullets
+
+* bullet 1
+* bullet 2
+
+Numbered list
+
+1. item 1
+2. item 2
+```
+]
+
+.pull-right[
+Bullets
+
+* bullet 1
+* bullet 2
+
+Numbered list
+
+1. item 1
+2. item 2
+]
+
+---
+
+## Hyperlinks 
+
+Use brackets to denote a link.  Place the URL in parentheses.
+
+```
+This is a link to the [RStudio Community](https://community.rstudio.com)
+```
+
+This is a link to the [RStudio Community](https://community.rstudio.com)
+
+
+---
+
+# Images
+
+* Use a link preceded by an `!` to insert an image. 
+
+--
+
+* The link text should be a URL or a file path 
+
+--
+
+`![Img Caption](https://rstudio.com/assets/img/og/bcorp-og-630.jpg)`
+
+--
+
+![RStudio](https://d33wubrfki0l68.cloudfront.net/ca4b0ae74fce141fb92ede7117b1c1928478c441/98350/wp-content/uploads/2018/10/rstudio-logo-gray.png)
+---
+
+## [The cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/rmarkdown-2.0.pdf)
+
+![](https://d33wubrfki0l68.cloudfront.net/374f4c769f97c4ded7300d521eb59b24168a7261/c72ad/lesson-images/cheatsheets-1-cheatsheet.png)
+
+---
+
+## Code chunks
+
+* The powerhouse of the document 
+
+--
+
+* Where you write and execute code
+
+--
+
+![](static/code-chunk.png)
+
+---
+
+## Code chunks
+
+* When rendered, R Markdown will run the code and include its results. 
+
+--
+
+* R Markdown will also remove the ` ```{r} ` and ` ``` `.
+
+--
+
+* Insert a chunk with
+
+&lt;img src='static/insert-chunk.png' width = 500/&gt;
+
+---
+
+## Chunk Engines
+
+* Not relegated to just R
+* Rmd supports:
+
+
+```r
+names(knitr::knit_engines$get())
+```
+
+```
+##  [1] "awk"       "bash"      "coffee"    "gawk"      "groovy"    "haskell"  
+##  [7] "lein"      "mysql"     "node"      "octave"    "perl"      "psql"     
+## [13] "Rscript"   "ruby"      "sas"       "scala"     "sed"       "sh"       
+## [19] "stata"     "zsh"       "highlight" "Rcpp"      "tikz"      "dot"      
+## [25] "c"         "fortran"   "fortran95" "asy"       "cat"       "asis"     
+## [31] "stan"      "block"     "block2"    "js"        "css"       "sql"      
+## [37] "go"        "python"    "julia"     "sass"      "scss"
+```
+
+---
+
+## How it works
+
+![](https://bookdown.org/yihui/rmarkdown-cookbook/images/workflow.png)
+
+---
+
+## How can we use Rmd?
+
+- Rmd as the interactive environment (literate programming)
+
+--
+
+- Rmd as the end product (sharing code + output)
+
+--
+
+- Rmd + parameters
+
+--
+
+- Rmd as a data product (_hide_ code, output to PDF, HTML, Flexdashboard, blogdown, etc)
+
+---
+class: inverse, middle, center
+
+# Rmd as a development tool
+
+`pop-proj-eda.Rmd`
+
+---
+class: inverse, middle, center
+# Rmd as an end product
+
+`pop-proj-report.Rmd`
+
+---
+
+## Parameterization 
+
+- Include parameters in YAML
+
+--
+
+- Can be referenced in R code
+
+--
+
+```
+params:
+  param-name: value
+```
+
+--
+
+```
+params:
+  param-name:
+    value: default-value
+    choices: [choice-1, choice-2, ..., choice-n]
+```
+
+- Reference with `param$param-name`
+
+More info [here](https://bookdown.org/yihui/rmarkdown/params-declare.html)
+
+---
+
+class: inverse, middle, center
+# Parameterized Rmd
+
+`age-pop-parameterized.Rmd`
+
+---
+class: inverse, middle, center
+
+# Almost there! 
+
+---
+class: inverse, middle, center
+
+# flexdashboard
+
+---
+
+## flexdashboard
+
+- Use markdown syntax to create dashboards
+
+--
+
+- Intelligent layouts (row and column-based)
+
+--
+
+- Automatic content sizing
+
+--
+
+- Can incorporate shiny
+
+---
+
+## [Example flexdashboard](https://walkerke.shinyapps.io/neighborhood_diversity/)
+
+![](static/example-flexdb.png)
+---
+
+## Using flexdashboard
+
+![](static/flexdb-layout.png)
+---
+
+# Resources:
+
+- [This presentation](https://github.com/josiahparry/qsld-rmd)
+- [R Markdown the Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
+- [R Markdown: The Bigger Picture](https://rstudio.com/resources/rstudioconf-2019/r-markdown-the-bigger-picture/)
+- [flexdashboard examples](https://rmarkdown.rstudio.com/flexdashboard/examples.html)
+
+
+-https://github.com/rstudio-education/remaster-the-tidyverse/blob/master/Welcome-To-The-Tidyverse/keynotes/05-Report.key
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": false,
+"highlightSpans": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
